@@ -1,0 +1,32 @@
+# Event Analytics
+## The developer friendly javascript library to do Event Tracking using Google Analytics or Piwik
+
+Fabio Buda fabiobuda@netd.it - Netdesign
+
+First release on Nov 03 2015
+
+## Contents of this package:
+
+* EventAnalytics-1.0.js - the source code
+* EventAnalytics-1.0.min.js - minified source code
+* GPL-Licence.txt - GPL3 licence
+* docs/EventAnalyticsUML.dia - Dia UML block diagram
+
+## Docs:
+
+All documentation is available online at http://www.eventanalytics.org
+
+## License:
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
