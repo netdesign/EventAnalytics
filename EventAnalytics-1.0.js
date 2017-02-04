@@ -1,5 +1,5 @@
 /*
-    Event Analytics 1.0
+    Event Analytics 1.0.1
     
     The developer friendly javascript library to do
     Event Tracking using Google Analytics or Piwik
@@ -29,6 +29,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
     -- END GNU GPL LICENSE
+*/
+
+/*
+    ChangeLog:
+    v1.0.1 - 04.02.2017 fabiobuda@netd.it
+        [Feature] Added support for get selected text on Desktop and Mobile
+        [Feature] Added support to register custom dimensions (simple proxy to Piwik or GA)
 */
 
 /*
@@ -69,6 +76,7 @@ EventAnalytics._Init = function(){
     var Scroll = {"25":false, "50":false, "75":false};
     EventAnalytics.Scroll = Scroll;
     EventAnalytics.InitScrollEvents();
+    EventAnalytics.EventAnalytics.InitTextSelection();
 }
 
 EventAnalytics.RegisterNewVisitorCallback = function( callback, delay ){
@@ -132,6 +140,14 @@ $( window ).scroll(function() {
 });
 }
 
+EventAnalytics.InitVisitor = function(){
+    if( EventAnalytics.IsGA ){
+        EventAnalytics.InitVisitorGA();
+    } else if( EventAnalytics.IsPiwik ){
+        EventAnalytics.InitVisitorPiwik();
+    }
+}
+
 EventAnalytics.InitVisitorPiwik = function(){
     var VisitorInfo = EventAnalytics.Tracker.getVisitorInfo();
     // Is new visitor seems to not work :(
@@ -176,12 +192,11 @@ EventAnalytics.InitVisitorGA = function(){
     }
 }
 
-EventAnalytics.InitVisitor = function(){
-    if( EventAnalytics.IsGA ){
-        EventAnalytics.InitVisitorGA();
-    } else if( EventAnalytics.IsPiwik ){
-        EventAnalytics.InitVisitorPiwik();
-    }
+EventAnalytics.InitTextSelection = function(){
+    EventAnalytics.Utils.StartListenSelectTextEvent( EventAnalytics._TextSelectCallBack );
+}
+EventAnalytics._TextSelectCallBack = function( text ){
+    EventAnalytics.RegisterUIEvent("document", "selection", "text", text);
 }
 
 EventAnalytics.RegisterUIEvent = function( category, action, name, value ){
@@ -191,6 +206,28 @@ EventAnalytics.RegisterUIEvent = function( category, action, name, value ){
         ga('send', 'event', cat, action, name, value);
     } else if( EventAnalytics.IsPiwik ){
         EventAnalytics.Tracker.trackEvent(cat, action, name, value);
+    }
+}
+
+/*
+    Custom Dimensions is a feature that have both Piwik and GA
+    * Piwik limits the number of custom dimensions to 5 even if you can
+      configure more custom dimensions rebuilding your DB schema
+      Many info at:
+      https://piwik.org/docs/custom-dimensions/#data-limits-for-custom-dimensions
+      http://piwik.org/faq/how-to/faq_17931/
+    * GA limits the number of custom dimensions to 20 for free users
+      and to 200 for premium Google Analytics Users
+      Many info at:
+      https://developers.google.com/analytics/devguides/collection/analyticsjs/custom-dims-mets
+
+    We leave to the user the correct management of dimensions
+*/
+EventAnalytics.RegisterCustomDimension = function( index, value ){
+    if( EventAnalytics.IsGA ){
+        ga('send', 'pageview', { index:  value });
+    } else if( EventAnalytics.IsPiwik ){
+        EventAnalytics.Tracker.setCustomDimension(index, value);
     }
 }
 
@@ -358,4 +395,55 @@ EventAnalytics.CookieStorage.read = function(nameEQ){
 
 EventAnalytics.CookieStorage.erase = function(name){
     EventAnalytics.CookieStorage.create(name,"",-1);
+}
+
+
+/*
+    Utils contains useful functions for
+    getting selected text by user
+*/
+EventAnalytics.Utils = EventAnalytics.Utils || {};
+
+EventAnalytics.Utils.getSelectedText = function(){
+    var ret = '';
+    if (window.getSelection) {
+        ret = window.getSelection().toString();
+    } else if (document.selection) {
+        ret = document.selection.createRange().text;
+    }
+    return ret;
+}
+
+EventAnalytics.Utils.LastSelectedText = false;
+EventAnalytics.Utils.SelectTextEventFired = false;
+
+/*
+    Tested on:
+    Chrome, Firefox, Opera Desktop
+    iOS 10 Safari, Android 4.4.2 Chrome
+    It works very well on Desktop and iOS
+    but is not stable on Android Chrome
+*/
+EventAnalytics.Utils.StartListenSelectTextEvent = function( callback ){
+    $(document).on("mouseup touchend onselectstart onselectend onselectionchange", function(e) {
+        e.preventDefault();
+        if( !EventAnalytics.Utils.SelectTextEventFired ){
+            var text=EventAnalytics.Utils.getSelectedText();
+            if (text!='' && text != EventAnalytics.Utils.LastSelectedText){
+                EventAnalytics.Utils.LastSelectedText = text;
+                callback( text );
+            }
+            EventAnalytics.Utils.SelectTextEventFired = true;
+            setTimeout(function(){ EventAnalytics.Utils.SelectTextEventFired = false; }, 50);
+        }
+    });
+}
+
+EventAnalytics.Utils.getMetadata = function(){
+    var title = document.title;
+    var description = $("meta[name='description']").attr("content");
+    var keywords = $("meta[name='keywords']").attr("content");
+    //alert(title);
+    //alert(description);
+    //alert(keywords);
 }
