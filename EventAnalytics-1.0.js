@@ -76,7 +76,7 @@ EventAnalytics._Init = function(){
     var Scroll = {"25":false, "50":false, "75":false};
     EventAnalytics.Scroll = Scroll;
     EventAnalytics.InitScrollEvents();
-    EventAnalytics.EventAnalytics.InitTextSelection();
+    EventAnalytics.InitTextSelection();
 }
 
 EventAnalytics.RegisterNewVisitorCallback = function( callback, delay ){
