@@ -425,7 +425,7 @@ EventAnalytics.Utils.SelectTextEventFired = false;
     but is not stable on Android Chrome
 */
 EventAnalytics.Utils.StartListenSelectTextEvent = function( callback ){
-    $(document).on("mouseup touchend onselectstart onselectend onselectionchange", function(e) {
+    $("*").not("a").on("mouseup touchend onselectstart onselectend onselectionchange", function(e) {
         e.preventDefault();
         if( !EventAnalytics.Utils.SelectTextEventFired ){
             var text=EventAnalytics.Utils.getSelectedText();
